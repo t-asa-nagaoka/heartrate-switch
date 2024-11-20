@@ -128,7 +128,7 @@ function loadRetentionPeriod() {
 
 function loadThresholdHigh() {
   const key = "thresholdHigh";
-  const defaultValue = 1.0;
+  const defaultValue = 1000;
   const type = "float";
 
   return loadNumber(key, defaultValue, type);
@@ -136,7 +136,7 @@ function loadThresholdHigh() {
 
 function loadThresholdLow() {
   const key = "thresholdLow";
-  const defaultValue = 0.8;
+  const defaultValue = 800;
   const type = "float";
 
   return loadNumber(key, defaultValue, type);

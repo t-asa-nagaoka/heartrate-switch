@@ -1,25 +1,26 @@
 <svg>
   <use id="myList" href="#tile-list" class="horizontal-pad hidden" pointer-events="visible">
     <use href="#my-item" id="currentRelax">
-      <set href="#text" attributeName="text-buffer" to="リラックス傾向：X.XXX" />
+      <!-- [心拍サンプル数] リラックス傾向 -->
+      <set href="#text" attributeName="text-buffer" to="[XXX] XXX.X" />
     </use>
     <use href="#my-item" id="thresholdHigh">
-      <set href="#text" attributeName="text-buffer" to="高しきい値：X.XXX" />
+      <set href="#text" attributeName="text-buffer" to="高しきい値:XXX.X" />
     </use>
     <use href="#my-item" id="thresholdLow">
-      <set href="#text" attributeName="text-buffer" to="低しきい値：X.XXX" />
+      <set href="#text" attributeName="text-buffer" to="低しきい値:XXX.X" />
     </use>
     <use href="#my-item" id="retentionPeriod">
-      <set href="#text" attributeName="text-buffer" to="保持期間：XXXX秒" />
+      <set href="#text" attributeName="text-buffer" to="保持期間:XXX秒" />
     </use>
     <use href="#my-item" id="sendHttp">
-      <set href="#text" attributeName="text-buffer" to="HTTP送信：XXX" />
+      <set href="#text" attributeName="text-buffer" to="HTTP送信:XXX" />
     </use>
     <use href="#my-item" id="preventDetection">
-      <set href="#text" attributeName="text-buffer" to="検出抑制：XXX" />
+      <set href="#text" attributeName="text-buffer" to="検出抑制:XXX" />
     </use>
     <use href="#my-item" id="detectionCount">
-      <set href="#text" attributeName="text-buffer" to="検出回数：XXXX回" />
+      <set href="#text" attributeName="text-buffer" to="検出回数:XXX回" />
     </use>
   </use>
   <image x="68" y="34" width="200" height="200" href="normal_clear.png" id="image" class="" pointer-events="visible" />
