@@ -70,8 +70,8 @@ function registerHandlers() {
 function loadSettings() {
   const defaultSettings = {
     retentionPeriod: 600,
-    thresholdHigh: 1.0,
-    thresholdLow: 0.8,
+    thresholdHigh: 1000,
+    thresholdLow: 800,
     sendHttp: false,
     sendUrl: "",
   };
@@ -119,7 +119,7 @@ function onReading() {
 
 function appendSample(heartRate) {
   const time = new Date().getTime();
-  const duration = 60 / heartRate;
+  const duration = 60 * 1000 / heartRate;
   const sample = [time, duration];
 
   state.samples.push(sample);
@@ -282,24 +282,27 @@ function onClickImage() {
 function displaySettings() {
   const { settings } = state;
 
-  el.thresholdHigh.text = `高しきい値：${settings.thresholdHigh.toFixed(3)}`;
-  el.thresholdLow.text = `低しきい値：${settings.thresholdLow.toFixed(3)}`;
-  el.retentionPeriod.text = `保持期間：${settings.retentionPeriod}`;
-  el.sendHttp.text = `HTTP送信：${settings.sendHttp ? "ON" : "OFF"}`;
+  const highDigits = settings.thresholdHigh < 1000 ? 1 : 0;
+  const lowDigits = settings.thresholdLow < 1000 ? 1 : 0;
+  el.thresholdHigh.text = `高しきい値:${settings.thresholdHigh.toFixed(highDigits)}`;
+  el.thresholdLow.text = `低しきい値:${settings.thresholdLow.toFixed(lowDigits)}`;
+  el.retentionPeriod.text = `保持期間:${settings.retentionPeriod}秒`;
+  el.sendHttp.text = `HTTP送信:${settings.sendHttp ? "ON" : "OFF"}`;
 }
 
 function displayRelax() {
-  el.currentRelax.text = `リラックス傾向：${state.currentRelax.toFixed(3)}`;
+  const digits = state.currentRelax < 1000 ? 1 : 0;
+  el.currentRelax.text = `[${state.samples.length}] ${state.currentRelax.toFixed(digits)}`;
 }
 
 function displayPreventDetection() {
-  el.preventDetection.text = `検出抑制：${
+  el.preventDetection.text = `検出抑制:${
     state.preventDetection ? "ON" : "OFF"
   }`;
 }
 
 function displayDetectionCount() {
-  el.detectionCount.text = `検出回数：${state.detectionCount}`;
+  el.detectionCount.text = `検出回数:${state.detectionCount}回`;
 }
 
 function displayTileList() {
