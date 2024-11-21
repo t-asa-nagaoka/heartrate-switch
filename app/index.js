@@ -8,8 +8,9 @@ appbit.appTimeoutEnabled = false;
 
 const SETTINGS_FILE = "settings.json";
 const RESEND_INTERVAL = 5000;
-const MIN_SAMPLES = 2;
+//const MIN_SAMPLES = 2;
 
+const imageRelaxMissingSamples = "blank.png";
 const imageRelaxHigh = "high_clear.png";
 const imageRelaxNormal = "normal_clear.png";
 const imageRelaxLow = "low_clear.png";
@@ -110,11 +111,16 @@ function onReading() {
   appendSample(heartRate);
   removeSamples();
 
-  if (state.samples.length >= MIN_SAMPLES) {
+  if (state.samples.length == state.settings.retentionPeriod) {
     calculateRelax();
     detectLowRelax();
     disablePreventDetection();
   }
+
+  displayRelax();
+  displayRelaxImage();
+  displayDetectionCount();
+  displayPreventDetection();
 }
 
 function appendSample(heartRate) {
@@ -129,16 +135,11 @@ function removeSamples() {
   const retentionPeriod = state.settings.retentionPeriod * 1000;
   const retentionTime = new Date().getTime() - retentionPeriod;
 
-  while (state.samples.length >= 1) {
-    const [sample] = state.samples;
-    const [time] = sample;
-
-    if (retentionTime <= time) {
-      break;
-    }
-
-    state.samples.shift();
-  }
+  state.samples = state.samples.slice(-state.settings.retentionPeriod)
+    .filter(sample => {
+      const [time] = sample;
+      return time >= retentionTime;
+    })
 }
 
 function calculateRelax() {
@@ -159,8 +160,6 @@ function calculateRelax() {
   const relax = Math.sqrt(centerX * centerX + centerY * centerY);
 
   state.currentRelax = relax;
-  displayRelax();
-  displayRelaxImage();
 }
 
 function detectLowRelax() {
@@ -180,9 +179,8 @@ function detectLowRelax() {
   if (!state.preventDetection) {
     // 現在のリラックス傾向が低リラックス状態のしきい値よりも低いかをチェックしています。
     if (state.currentRelax < state.settings.thresholdLow) {
-      // 検出回数カウントを 1 増やしてから画面に表示します。
+      // 検出回数カウントを 1 増やします。
       state.detectionCount += 1;
-      displayDetectionCount();
 
       // HTTP リクエストを送信する設定になっているかをチェックしています。
       if (state.settings.sendHttp) {
@@ -211,9 +209,8 @@ function detectLowRelax() {
         }
       }
 
-      // 低リラックス状態の検出抑制フラグを ON にしてから画面に表示します。
+      // 低リラックス状態の検出抑制フラグを ON にします。
       state.preventDetection = true;
-      displayPreventDetection();
     }
   }
 }
@@ -221,7 +218,6 @@ function detectLowRelax() {
 function disablePreventDetection() {
   if (state.currentRelax > state.settings.thresholdHigh) {
     state.preventDetection = false;
-    displayPreventDetection();
   }
 }
 
@@ -291,8 +287,12 @@ function displaySettings() {
 }
 
 function displayRelax() {
-  const digits = state.currentRelax < 1000 ? 1 : 0;
-  el.currentRelax.text = `[${state.samples.length}] ${state.currentRelax.toFixed(digits)}`;
+  if (state.samples.length < state.settings.retentionPeriod) {
+    el.currentRelax.text = `蓄積中... ${state.samples.length} / ${state.settings.retentionPeriod}`;
+  } else {
+    const digits = state.currentRelax < 1000 ? 1 : 0;
+    el.currentRelax.text = `リラックス傾向:${state.currentRelax.toFixed(digits)}`;
+  }
 }
 
 function displayPreventDetection() {
@@ -324,7 +324,10 @@ function displayImage() {
 }
 
 function displayRelaxImage() {
-  if (state.currentRelax < state.settings.thresholdLow) {
+  if (state.samples.length < state.settings.retentionPeriod) {
+    el.image.href = imageRelaxMissingSamples;
+    el.label.text = `蓄積中... ${state.samples.length} / ${state.settings.retentionPeriod}`;
+  } else if (state.currentRelax < state.settings.thresholdLow) {
     el.image.href = imageRelaxLow;
     el.label.text = textRelaxLow;
   } else if (state.currentRelax > state.settings.thresholdHigh) {

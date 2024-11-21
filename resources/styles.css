@@ -7,6 +7,7 @@
   x: 15%;
   text-anchor: start;
   font-size: 20;
+  text-length: 100;
 }
 
 .line {
@@ -18,4 +19,8 @@
 
 .hidden {
   display: none;
+}
+
+#label {
+  text-length: 100;
 }
