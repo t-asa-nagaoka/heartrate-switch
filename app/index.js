@@ -135,11 +135,11 @@ function removeSamples() {
   const retentionPeriod = state.settings.retentionPeriod * 1000;
   const retentionTime = new Date().getTime() - retentionPeriod;
 
-  state.samples = state.samples.slice(-state.settings.retentionPeriod)
-    .filter(sample => {
+  state.samples = state.samples.filter(sample => {
       const [time] = sample;
       return time >= retentionTime;
     })
+    .slice(-state.settings.retentionPeriod);
 }
 
 function calculateRelax() {
