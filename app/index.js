@@ -2,6 +2,8 @@ import { me as appbit } from "appbit";
 import * as document from "document";
 import * as fs from "fs";
 import { HeartRateSensor } from "heart-rate";
+import { display } from "display";
+import { vibration } from "haptics";
 import * as messaging from "messaging";
 
 appbit.appTimeoutEnabled = false;
@@ -9,6 +11,7 @@ appbit.appTimeoutEnabled = false;
 const SETTINGS_FILE = "settings.json";
 const RESEND_INTERVAL = 5000;
 //const MIN_SAMPLES = 2;
+const VIBRATION_TIME = 1000;
 
 const imageRelaxMissingSamples = "blank.png";
 const imageRelaxHigh = "high_clear.png";
@@ -182,6 +185,9 @@ function detectLowRelax() {
       // 検出回数カウントを 1 増やします。
       state.detectionCount += 1;
 
+      // バイブレーションと画面点灯で知らせます。
+      notify();
+
       // HTTP リクエストを送信する設定になっているかをチェックしています。
       if (state.settings.sendHttp) {
         /** 送信される HTTP リクエストボディの内容です。 */
@@ -219,6 +225,14 @@ function disablePreventDetection() {
   if (state.currentRelax > state.settings.thresholdHigh) {
     state.preventDetection = false;
   }
+}
+
+function notify() {
+  if (vibration.start("nudge")) {
+    setTimeout(() => vibration.stop(), VIBRATION_TIME);
+  }
+
+  display.on = true;
 }
 
 function sendRequest(request) {
