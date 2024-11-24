@@ -22,6 +22,12 @@
       <set href="#text" attributeName="text-buffer" to="検出回数:XXX回" />
     </use>
   </use>
-  <image x="68" y="34" width="200" height="200" href="blank.png" id="image" class="" pointer-events="visible" />
-  <text x="50%" y="272" font-family="System-Regular" fill="white" font-size="24" font-weight="bold" text-anchor="middle" id="label">蓄積中... 0 / XXX</text>
+  <image x="10" y="10" width="96" height="96" href="blank.png" id="image" class="" pointer-events="visible" />
+  <text x="60%" y="70" font-family="System-Regular" fill="white" font-size="24" font-weight="bold" text-anchor="middle" id="label">蓄積中... 0 / XXX</text>
+  <use href="#text-button" id="subjectiveSwitch" class="text-button primary application-fill hidden">
+    <set href="#text" attributeName="text-buffer" to="ストレスを感じたら押す" />
+  </use>
+  <use href="#text-button" id="showDetails" class="text-button secondary application-fill">
+    <set href="#text" attributeName="text-buffer" to="詳細表示へ" />
+  </use>
 </svg>

@@ -18,9 +18,12 @@ const imageRelaxHigh = "high_clear.png";
 const imageRelaxNormal = "normal_clear.png";
 const imageRelaxLow = "low_clear.png";
 
-const textRelaxHigh = "リラックス傾向：高い";
-const textRelaxNormal = "リラックス傾向：通常";
-const textRelaxLow = "リラックス傾向：低い";
+const textRelaxHigh = "リラックス：高";
+const textRelaxNormal = "リラックス：通常";
+const textRelaxLow = "リラックス：低";
+
+const subjectiveSwitchClasses = "text-button primary application-fill";
+const showDetailsClasses = "text-button secondary application-fill";
 
 const el = {
   currentRelax: document.getElementById("currentRelax"),
@@ -33,6 +36,8 @@ const el = {
   tileList: document.getElementById("myList"),
   image: document.getElementById("image"),
   label: document.getElementById("label"),
+  subjectiveSwitch: document.getElementById("subjectiveSwitch"),
+  showDetails: document.getElementById("showDetails"),
 };
 
 const state = {
@@ -44,6 +49,7 @@ const state = {
   preventDetection: false,
   detectionCount: 0,
   showImage: true,
+  allowSubjectiveSwitch: false, // 主観スイッチの作動を許可
 };
 
 setup();
@@ -68,7 +74,7 @@ function registerHandlers() {
   setInterval(onTimeout, RESEND_INTERVAL);
 
   el.tileList.addEventListener("click", onClickTileList)
-  el.image.addEventListener("click", onClickImage)
+  el.showDetails.addEventListener("click", onClickShowDetails);
 }
 
 function loadSettings() {
@@ -115,9 +121,12 @@ function onReading() {
   removeSamples();
 
   if (state.samples.length == state.settings.retentionPeriod) {
+    state.allowSubjectiveSwitch = true;
     calculateRelax();
     detectLowRelax();
     disablePreventDetection();
+  } else {
+    state.allowSubjectiveSwitch = false;
   }
 
   displayRelax();
@@ -283,7 +292,7 @@ function onClickTileList() {
   displayImage();
 }
 
-function onClickImage() {
+function onClickShowDetails() {
   state.showImage = false;
   displayTileList();
   displayImage();
@@ -329,15 +338,24 @@ function displayTileList() {
 
 function displayImage() {
   if (state.showImage) {
+    const hidden = state.allowSubjectiveSwitch ? "" : " hidden";
+    
     el.image.class = "";
     el.label.class ="";
+    el.subjectiveSwitch.class = subjectiveSwitchClasses + hidden;
+    el.showDetails.class = showDetailsClasses;
   } else {
     el.image.class = "hidden";
     el.label.class = "hidden";
+    el.subjectiveSwitch.class = subjectiveSwitchClasses + " hidden";
+    el.showDetails.class = showDetailsClasses + " hidden";
   }
 }
 
 function displayRelaxImage() {
+  const hidden = state.showImage && state.allowSubjectiveSwitch ? "" : " hidden";
+  el.subjectiveSwitch.class = subjectiveSwitchClasses + hidden;
+
   if (state.samples.length < state.settings.retentionPeriod) {
     el.image.href = imageRelaxMissingSamples;
     el.label.text = `蓄積中... ${state.samples.length} / ${state.settings.retentionPeriod}`;
