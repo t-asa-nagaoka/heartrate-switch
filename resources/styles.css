@@ -24,3 +24,16 @@
 #label {
   text-length: 100;
 }
+
+/* 以下，ボタン用のCSS */
+.application-fill {
+  fill: fb-cyan;
+}
+
+.foreground-fill {
+  fill: fb-white;
+}
+
+.background-fill {
+  fill: fb-black;
+}

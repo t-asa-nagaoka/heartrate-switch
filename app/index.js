@@ -18,9 +18,12 @@ const imageRelaxHigh = "high_clear.png";
 const imageRelaxNormal = "normal_clear.png";
 const imageRelaxLow = "low_clear.png";
 
-const textRelaxHigh = "リラックス傾向：高い";
-const textRelaxNormal = "リラックス傾向：通常";
-const textRelaxLow = "リラックス傾向：低い";
+const textRelaxHigh = "リラックス：高";
+const textRelaxNormal = "リラックス：通常";
+const textRelaxLow = "リラックス：低";
+
+const subjectiveSwitchClasses = "text-button primary application-fill";
+const showDetailsClasses = "text-button secondary application-fill";
 
 const el = {
   currentRelax: document.getElementById("currentRelax"),
@@ -29,10 +32,12 @@ const el = {
   retentionPeriod: document.getElementById("retentionPeriod"),
   sendHttp: document.getElementById("sendHttp"),
   preventDetection: document.getElementById("preventDetection"),
-  detectionCount: document.getElementById("detectionCount"),
+  count: document.getElementById("count"),
   tileList: document.getElementById("myList"),
   image: document.getElementById("image"),
   label: document.getElementById("label"),
+  subjectiveSwitch: document.getElementById("subjectiveSwitch"),
+  showDetails: document.getElementById("showDetails"),
 };
 
 const state = {
@@ -43,14 +48,17 @@ const state = {
   requests: [],
   preventDetection: false,
   detectionCount: 0,
+  subjectiveCount: 0,
   showImage: true,
+  allowSubjectiveSwitch: false, // 主観スイッチの作動を許可
+  pressedSubjectiveSwitch: false, // 主観スイッチが押された直後の再作動を禁止
 };
 
 setup();
 
 function setup() {
   displayPreventDetection();
-  displayDetectionCount();
+  displayCount();
   displayTileList();
   displayImage();
   updateSettings(loadSettings());
@@ -64,11 +72,13 @@ function registerHandlers() {
     state.hrm.start();
   }
 
+  el.subjectiveSwitch.addEventListener("click", onClickSubjectiveSwitch);
+
   messaging.peerSocket.addEventListener("message", onMessage);
   setInterval(onTimeout, RESEND_INTERVAL);
 
   el.tileList.addEventListener("click", onClickTileList)
-  el.image.addEventListener("click", onClickImage)
+  el.showDetails.addEventListener("click", onClickShowDetails);
 }
 
 function loadSettings() {
@@ -115,14 +125,17 @@ function onReading() {
   removeSamples();
 
   if (state.samples.length == state.settings.retentionPeriod) {
+    state.allowSubjectiveSwitch = !state.pressedSubjectiveSwitch;
     calculateRelax();
     detectLowRelax();
     disablePreventDetection();
+  } else {
+    state.allowSubjectiveSwitch = false;
   }
 
   displayRelax();
   displayRelaxImage();
-  displayDetectionCount();
+  displayCount();
   displayPreventDetection();
 }
 
@@ -190,17 +203,8 @@ function detectLowRelax() {
 
       // HTTP リクエストを送信する設定になっているかをチェックしています。
       if (state.settings.sendHttp) {
-        /** 送信される HTTP リクエストボディの内容です。 */
-        const request = {
-          /** 送信日時です。 */
-          date: new Date().toISOString(),
-          /** 現在のリラックス傾向です。 */
-          relax: state.currentRelax,
-          /** 低リラックス状態のしきい値です。 */
-          threshold: state.settings.thresholdLow,
-          /** HTTP リクエストの再送信が行われたかを示すフラグです。 */
-          retry: false,
-        };
+        /** 送信される HTTP リクエストボディの内容を生成します。 */
+        const request = createRequest(false);
 
         /** HTTP リクエストの送信が成功したかどうかです。 */
         const sent = sendRequest(request);
@@ -233,6 +237,60 @@ function notify() {
   }
 
   display.on = true;
+}
+
+function onClickSubjectiveSwitch() {
+  if (state.allowSubjectiveSwitch) {
+    // 主観スイッチの回数カウントを 1 増やします。
+    state.subjectiveCount += 1;
+
+    // HTTP リクエストを送信する設定になっているかをチェックしています。
+    if (state.settings.sendHttp) {
+      /** 送信される HTTP リクエストボディの内容を生成します。 */
+      const request = createRequest(true);
+
+      /** HTTP リクエストの送信が成功したかどうかです。 */
+      const sent = sendRequest(request);
+
+      // HTTP リクエストの送信が失敗したかをチェックしています。
+      if (!sent) {
+        // 再送信が行われることになるので ON にします。
+        request.retry = true;
+
+        // HTTP リクエスト再送信の待ち行列に追加します。
+        state.requests.push(request);
+      }
+    }
+
+    // 押された直後の再作動を禁止します
+    state.allowSubjectiveSwitch = false;
+    state.pressedSubjectiveSwitch = true;
+    setTimeout(() => state.pressedSubjectiveSwitch = false, RESEND_INTERVAL);
+
+    displayRelaxImage();
+    displayCount();
+  }
+}
+
+function createRequest(subjective) {
+  /** HTTPリクエストボディの生成 */
+  return {
+    /** 送信日時 */
+    date: new Date().toISOString(),
+    /** 現在のリラックス傾向 */
+    relax: state.currentRelax,
+    /** 心拍サンプルの所持時間 */
+    retentionPeriod: state.settings.retentionPeriod,
+    /** 高リラックス状態のしきい値 */
+    thresholdHigh: state.settings.thresholdHigh,
+    /** 低リラックス状態のしきい値 */
+    //threshold: state.settings.thresholdLow,
+    thresholdLow: state.settings.thresholdLow,
+    /** 主観スイッチであることを示すフラグ */
+    subjective,
+    /** HTTP リクエストの再送信が行われたかを示すフラグ */
+    retry: false,
+  };
 }
 
 function sendRequest(request) {
@@ -283,7 +341,7 @@ function onClickTileList() {
   displayImage();
 }
 
-function onClickImage() {
+function onClickShowDetails() {
   state.showImage = false;
   displayTileList();
   displayImage();
@@ -315,8 +373,8 @@ function displayPreventDetection() {
   }`;
 }
 
-function displayDetectionCount() {
-  el.detectionCount.text = `検出回数:${state.detectionCount}回`;
+function displayCount() {
+  el.count.text = `検出:${state.detectionCount}回 主観:${state.subjectiveCount}回`;
 }
 
 function displayTileList() {
@@ -329,15 +387,24 @@ function displayTileList() {
 
 function displayImage() {
   if (state.showImage) {
+    const hidden = state.allowSubjectiveSwitch ? "" : " hidden";
+    
     el.image.class = "";
     el.label.class ="";
+    el.subjectiveSwitch.class = subjectiveSwitchClasses + hidden;
+    el.showDetails.class = showDetailsClasses;
   } else {
     el.image.class = "hidden";
     el.label.class = "hidden";
+    el.subjectiveSwitch.class = subjectiveSwitchClasses + " hidden";
+    el.showDetails.class = showDetailsClasses + " hidden";
   }
 }
 
 function displayRelaxImage() {
+  const hidden = state.showImage && state.allowSubjectiveSwitch ? "" : " hidden";
+  el.subjectiveSwitch.class = subjectiveSwitchClasses + hidden;
+
   if (state.samples.length < state.settings.retentionPeriod) {
     el.image.href = imageRelaxMissingSamples;
     el.label.text = `蓄積中... ${state.samples.length} / ${state.settings.retentionPeriod}`;

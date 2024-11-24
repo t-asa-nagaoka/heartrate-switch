@@ -6,6 +6,7 @@
     <link rel="import" href="/mnt/sysassets/widgets/baseview_widget.defs" />
     <link rel="import" href="/mnt/sysassets/widgets/scrollbar.defs" />
     <link rel="import" href="/mnt/sysassets/widgets/tile_list_widget.defs" />
+    <link rel="import" href="/mnt/sysassets/widgets/text_button.defs" />
 
     <symbol id="my-item" href="#tile-list-item" class="list-item">
       <text id="text" />
