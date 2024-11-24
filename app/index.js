@@ -199,17 +199,8 @@ function detectLowRelax() {
 
       // HTTP リクエストを送信する設定になっているかをチェックしています。
       if (state.settings.sendHttp) {
-        /** 送信される HTTP リクエストボディの内容です。 */
-        const request = {
-          /** 送信日時です。 */
-          date: new Date().toISOString(),
-          /** 現在のリラックス傾向です。 */
-          relax: state.currentRelax,
-          /** 低リラックス状態のしきい値です。 */
-          threshold: state.settings.thresholdLow,
-          /** HTTP リクエストの再送信が行われたかを示すフラグです。 */
-          retry: false,
-        };
+        /** 送信される HTTP リクエストボディの内容を生成します。 */
+        const request = createRequest(false);
 
         /** HTTP リクエストの送信が成功したかどうかです。 */
         const sent = sendRequest(request);
@@ -242,6 +233,27 @@ function notify() {
   }
 
   display.on = true;
+}
+
+function createRequest(subjective) {
+  /** HTTPリクエストボディの生成 */
+  return {
+    /** 送信日時 */
+    date: new Date().toISOString(),
+    /** 現在のリラックス傾向 */
+    relax: state.currentRelax,
+    /** 心拍サンプルの所持時間 */
+    retentionPeriod: state.settings.retentionPeriod,
+    /** 高リラックス状態のしきい値 */
+    thresholdHigh: state.settings.thresholdHigh,
+    /** 低リラックス状態のしきい値 */
+    //threshold: state.settings.thresholdLow,
+    thresholdLow: state.settings.thresholdLow,
+    /** 主観スイッチであることを示すフラグ */
+    subjective,
+    /** HTTP リクエストの再送信が行われたかを示すフラグ */
+    retry: false,
+  };
 }
 
 function sendRequest(request) {
