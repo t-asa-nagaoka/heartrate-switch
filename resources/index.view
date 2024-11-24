@@ -18,8 +18,8 @@
     <use href="#my-item" id="preventDetection">
       <set href="#text" attributeName="text-buffer" to="検出抑制:XXX" />
     </use>
-    <use href="#my-item" id="detectionCount">
-      <set href="#text" attributeName="text-buffer" to="検出回数:XXX回" />
+    <use href="#my-item" id="count">
+      <set href="#text" attributeName="text-buffer" to="検出:XXX回 主観:XXX回" />
     </use>
   </use>
   <image x="10" y="10" width="96" height="96" href="blank.png" id="image" class="" pointer-events="visible" />

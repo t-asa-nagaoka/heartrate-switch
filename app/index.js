@@ -32,7 +32,7 @@ const el = {
   retentionPeriod: document.getElementById("retentionPeriod"),
   sendHttp: document.getElementById("sendHttp"),
   preventDetection: document.getElementById("preventDetection"),
-  detectionCount: document.getElementById("detectionCount"),
+  count: document.getElementById("count"),
   tileList: document.getElementById("myList"),
   image: document.getElementById("image"),
   label: document.getElementById("label"),
@@ -48,15 +48,17 @@ const state = {
   requests: [],
   preventDetection: false,
   detectionCount: 0,
+  subjectiveCount: 0,
   showImage: true,
   allowSubjectiveSwitch: false, // 主観スイッチの作動を許可
+  pressedSubjectiveSwitch: false, // 主観スイッチが押された直後の再作動を禁止
 };
 
 setup();
 
 function setup() {
   displayPreventDetection();
-  displayDetectionCount();
+  displayCount();
   displayTileList();
   displayImage();
   updateSettings(loadSettings());
@@ -69,6 +71,8 @@ function registerHandlers() {
     state.hrm.addEventListener("reading", onReading);
     state.hrm.start();
   }
+
+  el.subjectiveSwitch.addEventListener("click", onClickSubjectiveSwitch);
 
   messaging.peerSocket.addEventListener("message", onMessage);
   setInterval(onTimeout, RESEND_INTERVAL);
@@ -121,7 +125,7 @@ function onReading() {
   removeSamples();
 
   if (state.samples.length == state.settings.retentionPeriod) {
-    state.allowSubjectiveSwitch = true;
+    state.allowSubjectiveSwitch = !state.pressedSubjectiveSwitch;
     calculateRelax();
     detectLowRelax();
     disablePreventDetection();
@@ -131,7 +135,7 @@ function onReading() {
 
   displayRelax();
   displayRelaxImage();
-  displayDetectionCount();
+  displayCount();
   displayPreventDetection();
 }
 
@@ -235,6 +239,39 @@ function notify() {
   display.on = true;
 }
 
+function onClickSubjectiveSwitch() {
+  if (state.allowSubjectiveSwitch) {
+    // 主観スイッチの回数カウントを 1 増やします。
+    state.subjectiveCount += 1;
+
+    // HTTP リクエストを送信する設定になっているかをチェックしています。
+    if (state.settings.sendHttp) {
+      /** 送信される HTTP リクエストボディの内容を生成します。 */
+      const request = createRequest(true);
+
+      /** HTTP リクエストの送信が成功したかどうかです。 */
+      const sent = sendRequest(request);
+
+      // HTTP リクエストの送信が失敗したかをチェックしています。
+      if (!sent) {
+        // 再送信が行われることになるので ON にします。
+        request.retry = true;
+
+        // HTTP リクエスト再送信の待ち行列に追加します。
+        state.requests.push(request);
+      }
+    }
+
+    // 押された直後の再作動を禁止します
+    state.allowSubjectiveSwitch = false;
+    state.pressedSubjectiveSwitch = true;
+    setTimeout(() => state.pressedSubjectiveSwitch = false, RESEND_INTERVAL);
+
+    displayRelaxImage();
+    displayCount();
+  }
+}
+
 function createRequest(subjective) {
   /** HTTPリクエストボディの生成 */
   return {
@@ -336,8 +373,8 @@ function displayPreventDetection() {
   }`;
 }
 
-function displayDetectionCount() {
-  el.detectionCount.text = `検出回数:${state.detectionCount}回`;
+function displayCount() {
+  el.count.text = `検出:${state.detectionCount}回 主観:${state.subjectiveCount}回`;
 }
 
 function displayTileList() {
