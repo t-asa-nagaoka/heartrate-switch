@@ -79,7 +79,7 @@ function onTimeout() {
 
 async function sendRequest(url, request) {
   try {
-    const response = fetch(url, {
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
