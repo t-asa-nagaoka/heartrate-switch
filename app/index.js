@@ -133,11 +133,11 @@ function onTimeout() {
 
   if (activate()) {
     calculateRelax()
-    updateRelaxState()
-    detectLowRelax()
-    updatePreventDetection()
   }
 
+  updateRelaxState()
+  detectLowRelax()
+  updatePreventDetection()
   updateDisplay()
   updateClock()
 
@@ -169,6 +169,10 @@ function updateSamples() {
 }
 
 function activate() {
+  // リラックス傾向の初期化
+  state.distance = null
+  state.area = null
+
   // リラックス傾向の計算が可能かどうか判断する
   // 起動直後からretentionPeriodと同じ秒数が経過するまでは計算不可
   if (clock.calculate == 0 && state.samples.length == state.settings.retentionPeriod && state.activeSamplesCount >= 2) {
@@ -454,7 +458,7 @@ function updateDisplay() {
   if (distance && area) {
     const distanceDigits = distance < 1000 ? 1 : 0
     const areaDigits = area < 1000 ? 1 : 0
-    el.currentRelax.text = `R:${distance.toFixed(distanceDigits)} (S:${area.toFixed(areaDigits)})`;
+    el.currentRelax.text = `M:${distance.toFixed(distanceDigits)} (S:${area.toFixed(areaDigits)})`;
   } else {
     el.currentRelax.text = `蓄積中... ${activeSamplesCount} / ${retentionCount}`;
   }
