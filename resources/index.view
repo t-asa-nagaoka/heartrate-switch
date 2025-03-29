@@ -1,29 +1,29 @@
 <svg>
   <use id="myList" href="#tile-list" class="horizontal-pad hidden" pointer-events="visible">
     <use href="#my-item" id="currentRelax">
-      <set href="#text" attributeName="text-buffer" to="蓄積中... 0 / XXX" />
+      <set href="#text" attributeName="text-buffer" to="蓄積中... 0 / 0" />
     </use>
     <use href="#my-item" id="thresholdHigh">
-      <set href="#text" attributeName="text-buffer" to="高しきい値:XXX.X" />
+      <set href="#text" attributeName="text-buffer" to="高しきい値:0.0" />
     </use>
     <use href="#my-item" id="thresholdLow">
-      <set href="#text" attributeName="text-buffer" to="低しきい値:XXX.X" />
+      <set href="#text" attributeName="text-buffer" to="低しきい値:0.0" />
     </use>
     <use href="#my-item" id="retentionPeriod">
-      <set href="#text" attributeName="text-buffer" to="保持期間:XXX秒" />
+      <set href="#text" attributeName="text-buffer" to="計測:0s 算出:0s 保持:$0s" />
     </use>
     <use href="#my-item" id="sendHttp">
-      <set href="#text" attributeName="text-buffer" to="HTTP送信:XXX" />
+      <set href="#text" attributeName="text-buffer" to="HTTP送信:-" />
     </use>
     <use href="#my-item" id="preventDetection">
-      <set href="#text" attributeName="text-buffer" to="検出抑制:XXX" />
+      <set href="#text" attributeName="text-buffer" to="検出抑制:-" />
     </use>
     <use href="#my-item" id="count">
-      <set href="#text" attributeName="text-buffer" to="検出:XXX回 主観:XXX回" />
+      <set href="#text" attributeName="text-buffer" to="検出:0回 主観:0回" />
     </use>
   </use>
   <image x="10" y="10" width="96" height="96" href="blank.png" id="image" class="" pointer-events="visible" />
-  <text x="60%" y="70" font-family="System-Regular" fill="white" font-size="24" font-weight="bold" text-anchor="middle" id="label">蓄積中... 0 / XXX</text>
+  <text x="60%" y="70" font-family="System-Regular" fill="white" font-size="24" font-weight="bold" text-anchor="middle" id="label">蓄積中... 0 / 0</text>
   <use href="#text-button" id="subjectiveSwitch" class="text-button primary application-fill hidden">
     <set href="#text" attributeName="text-buffer" to="ストレスを感じたら押す" />
   </use>

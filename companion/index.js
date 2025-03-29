@@ -2,7 +2,7 @@ import { settingsStorage } from "settings";
 import * as messaging from "messaging";
 import { me as companion } from "companion";
 
-const RESEND_INTERVAL = 5000;
+const RESEND_INTERVAL = 5;
 
 const state = {
   requests: [],
@@ -29,9 +29,7 @@ function registerHandlers() {
 
   messaging.peerSocket.addEventListener("message", onMessage);
 
-  setTimeout(() => {
-    setInterval(onTimeout, RESEND_INTERVAL);
-  }, RESEND_INTERVAL / 2);
+  setTimeout(onTimeout, RESEND_INTERVAL * 1000)
 }
 
 async function onMessage(event) {
@@ -75,6 +73,8 @@ function onTimeout() {
 
     state.requests.shift();
   }
+
+  setTimeout(onTimeout, RESEND_INTERVAL * 1000)
 }
 
 async function sendRequest(url, request) {
@@ -109,13 +109,31 @@ function sendSettings() {
 }
 
 function loadSettings() {
+  const measureInterval = loadMeasureInterval()
+  const calculateInterval = loadCalculateInterval()
   const retentionPeriod = loadRetentionPeriod();
   const thresholdHigh = loadThresholdHigh();
   const thresholdLow = loadThresholdLow();
   const sendHttp = loadSendHttp();
   const sendUrl = loadSendUrl();
 
-  return { retentionPeriod, thresholdHigh, thresholdLow, sendHttp, sendUrl };
+  return { measureInterval, calculateInterval, retentionPeriod, thresholdHigh, thresholdLow, sendHttp, sendUrl };
+}
+
+function loadMeasureInterval() {
+  const key = "measureInterval";
+  const defaultValue = 1;
+  const type = "int";
+
+  return loadNumber(key, defaultValue, type);
+}
+
+function loadCalculateInterval() {
+  const key = "calculateInterval";
+  const defaultValue = 1;
+  const type = "int";
+
+  return loadNumber(key, defaultValue, type);
 }
 
 function loadRetentionPeriod() {
